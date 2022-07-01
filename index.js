@@ -1,7 +1,7 @@
 'use strict'
 
 import express from 'express'
-
+import axios from 'axios' 
 // The OpenHIM Mediator Utils is an essential package for quick mediator setup.
 // It handles the OpenHIM authentication, mediator registration, and mediator heartbeat.
 import {
@@ -23,13 +23,40 @@ const openhimConfig = {
   urn
 }
 
-const app = express()
+const app = express();
+
+function getdata(){
+  let return_value=[];
+  let url = "https://www.hl7.org/fhir/patient-example.json"
+  return Promise.all([
+    JSON.parse(JSON.stringify(axios.get(url)))
+
+  ]).then(function ([res]) {
+   
+    return { res }
+  }); 
+}
+
+app.get('/getData', async (_req, res) => {
+  try {
+    var getDataRes = await getdata();
+    var getDataJson = JSON.parse(getDataRes);
+
+    console.log(`This is Response ${getDataJson}`);
+
+    await res.json({data: getDataRes});
+  } catch (err) { 
+    res.status(404).send('Sorry, cant find that');
+  }
+
+})
 
 // Any request regardless of request type or url path to the mediator port will be caught here
 // and trigger the Hello World response.
-app.all('*', (_req, res) => {
+app.all('/', (_req, res) => {
   res.send('Hello World')
 })
+
 
 app.listen(3000, () => {
   console.log('Server listening on port 3000...')
