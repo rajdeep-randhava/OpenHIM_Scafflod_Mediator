@@ -1,7 +1,10 @@
 'use strict'
 
-import express from 'express'
+import express from 'express';
 import axios from 'axios' 
+import api from "./opencrvs"
+import cors from "cors"
+
 // The OpenHIM Mediator Utils is an essential package for quick mediator setup.
 // It handles the OpenHIM authentication, mediator registration, and mediator heartbeat.
 import {
@@ -17,7 +20,7 @@ import mediatorConfig, { urn } from './mediatorConfig.json'
 // The config details here are used to authenticate and register the mediator with the OpenHIM instance
 const openhimConfig = {
   username: 'root@openhim.org',
-  password: 'password',
+  password: 'wXV8xSW2Ju5X3EPn',
   apiURL: 'https://openhim-core:8080',
   trustSelfSigned: true,
   urn
@@ -27,26 +30,47 @@ const app = express();
 
 function getdata(){
   let return_value=[];
-  let url = "https://www.hl7.org/fhir/patient-example.json"
-  return Promise.all([
-    JSON.parse(JSON.stringify(axios.get(url)))
-
-  ]).then(function ([res]) {
+   let url = "http://172.16.17.13:7070/graphql"
+  
+  let data = {"operationName":"searchEvents","variables":{"locationIds":["c9c4d6e9-981c-4646-98fe-4014fddebd5e"],"sort":"DESC","trackingId":"","registrationNumber":"","contactNumber":"","name":"Ing"},"query":"query searchEvents($sort: String, $trackingId: String, $contactNumber: String, $registrationNumber: String, $name: String, $locationIds: [String!]) {\n  searchEvents(\n    sort: $sort\n    trackingId: $trackingId\n    registrationNumber: $registrationNumber\n    name: $name\n    contactNumber: $contactNumber\n    locationIds: $locationIds\n  ) {\n    totalItems\n    results {\n      id\n      type\n      registration {\n        status\n        contactNumber\n        trackingId\n        registrationNumber\n        registeredLocationId\n        duplicates\n        assignment {\n          userId\n          firstName\n          lastName\n          officeName\n          __typename\n        }\n        createdAt\n        modifiedAt\n        __typename\n      }\n      ... on BirthEventSearchSet {\n        dateOfBirth\n        childName {\n          firstNames\n          familyName\n          use\n          __typename\n        }\n        __typename\n      }\n      ... on DeathEventSearchSet {\n        dateOfDeath\n        deceasedName {\n          firstNames\n          familyName\n          use\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n"}
+ 
+   let config = {
+    method: 'post',
+    url: url,
+    data : data,
+    headers: {    
+      Accept : "*/*" ,
+      authorization: "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzY29wZSI6WyJkZWNsYXJlIiwiZGVtbyJdLCJpYXQiOjE2NTc2MjEwNzIsImV4cCI6MTY1ODIyNTg3MiwiYXVkIjpbIm9wZW5jcnZzOmF1dGgtdXNlciIsIm9wZW5jcnZzOnVzZXItbWdudC11c2VyIiwib3BlbmNydnM6aGVhcnRoLXVzZXIiLCJvcGVuY3J2czpnYXRld2F5LXVzZXIiLCJvcGVuY3J2czpub3RpZmljYXRpb24tdXNlciIsIm9wZW5jcnZzOndvcmtmbG93LXVzZXIiLCJvcGVuY3J2czpzZWFyY2gtdXNlciIsIm9wZW5jcnZzOm1ldHJpY3MtdXNlciIsIm9wZW5jcnZzOmNvdW50cnljb25maWctdXNlciIsIm9wZW5jcnZzOndlYmhvb2tzLXVzZXIiLCJvcGVuY3J2czpjb25maWctdXNlciJdLCJpc3MiOiJvcGVuY3J2czphdXRoLXNlcnZpY2UiLCJzdWIiOiI2MmI5OWNkODhmMTEzYTcwMGNjMTlhMTgifQ.X4B8S6J992V3I_gmxEW3KEl3LRlZXmTcSkqYiAmFhy9jJRni14tCWYH71BONlYdnySJSrZnmc6VHmlG3uEcu0Ue7lwxZO9Dxnr9UY8cx6H6TQqLZHpEaQ8_sBzBz4HZQ1rabbJcdFPlahaJFoA-RCx-ng-UEJEFKvGXmtXbaA7BXMmvIgB-A-1tnMpH84shJm0tEtAz9etrpKjnmRwEzVAbVGxGpg20GkJk_n_BWwTGJ8lTsvXCikz40e7QLWIVMsTfVohpltUpEEgJwJXCfinvJkyZf5nHHrTmlZoJ87b5NRFhWoZBbxBaZ4GeixU7gq9Pnw8jXPudrObB10X64uw"       
+    },
    
-    return { res }
+
+  }
+   
+
+  return new Promise((resolve, reject) => {     
+    axios(url,config,data).then((response) =>  { 
+      resolve(response.data);
+    }) 
+  }).then(function(res){
+    //console.log("res" ,res)
+    return res;
   }); 
 }
+
+//api(app);
+  
+app.use(cors())
 
 app.get('/getData', async (_req, res) => {
   try {
     var getDataRes = await getdata();
-    var getDataJson = JSON.parse(getDataRes);
+    //var getDataJson = JSON.parse(getDataRes);
 
-    console.log(`This is Response ${getDataJson}`);
+    console.log(`This is Response ${getDataRes}`);
 
     await res.json({data: getDataRes});
   } catch (err) { 
-    res.status(404).send('Sorry, cant find that');
+    res.status(404).send(`Sorry, cant find that ${err}`);
   }
 
 })
@@ -58,7 +82,7 @@ app.all('/', (_req, res) => {
 })
 
 
-app.listen(3000, () => {
+app.listen(3001, () => {
   console.log('Server listening on port 3000...')
 
   mediatorSetup()
