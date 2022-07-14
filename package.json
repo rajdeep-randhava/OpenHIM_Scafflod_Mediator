@@ -6,7 +6,7 @@
   "author": "Jembi Health Systems NPC",
   "license": "MIT",
   "scripts": {
-    "start": "babel-node index.js"
+    "start": "export ENVIRONMENT_NAME=local && babel-node server/index.js"
   },
   "dependencies": {
     "@babel/cli": "^7.7.0",
@@ -15,6 +15,7 @@
     "@babel/preset-env": "^7.7.1",
     "axios": "^0.27.2",
     "cors": "^2.8.5",
+    "dotenv": "^16.0.1",
     "express": "^4.17.1",
     "openhim-mediator-utils": "^0.2.3"
   }
