@@ -6,7 +6,7 @@
   "author": "Jembi Health Systems NPC",
   "license": "MIT",
   "scripts": {
-    "start": "export ENVIRONMENT_NAME=local && babel-node server/index.js"
+    "start": "babel-node server/index.js"
   },
   "dependencies": {
     "@babel/cli": "^7.7.0",
