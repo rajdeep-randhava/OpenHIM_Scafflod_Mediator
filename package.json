@@ -4,19 +4,45 @@
   "description": "Scaffolding mediator to be used for tutorials",
   "repository": "git@github.com:jembi/openhim-bootstrap-mediator.git",
   "author": "Jembi Health Systems NPC",
+  "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "babel-node server/index.js"
+    "start": "export ENVIRONMENT_NAME=local && nodemon",
+    "postinstall": "link-module-alias",
+    "preinstall": "command -v link-module-alias && link-module-alias clean || true"
   },
-  "dependencies": {
-    "@babel/cli": "^7.7.0",
-    "@babel/core": "^7.7.2",
-    "@babel/node": "^7.7.0",
-    "@babel/preset-env": "^7.7.1",
+  "dependencies": { 
     "axios": "^0.27.2",
+    "bunyan": "^1.8.15",
     "cors": "^2.8.5",
     "dotenv": "^16.0.1",
-    "express": "^4.17.1",
+    "express": "^4.18.1",
+    "express-graphql": "^0.12.0",
+    "graphql": "^15.8.0",
+    "link-module-alias": "^1.2.0",
+    "nodemon": "^2.0.19",
     "openhim-mediator-utils": "^0.2.3"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.18.5",
+    "@babel/eslint-parser": "^7.18.2",
+    "@babel/node": "^7.18.5",
+    "@babel/plugin-transform-runtime": "^7.18.5",
+    "@babel/preset-env": "^7.18.2",
+    "@babel/runtime": "^7.18.3",
+    "eslint": "^8.18.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "jest": "^28.1.2",
+    "jest-coverage-badges": "^1.1.2",
+    "link-module-alias": "^1.2.0",
+    "prettier": "^2.7.0",
+    "prettier-standard": "^16.4.1",
+    "supertest": "^6.2.2"
+  },
+  "_moduleAliases": {
+    "config": "./server/config",
+    "server": "./server",
+    "api": "./server/api"
   }
 }

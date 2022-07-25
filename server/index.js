@@ -1,10 +1,9 @@
-'use strict'
-
+ 
 import express from 'express';
-import api from "./api/index"
-import {getToken} from "./api/auth"
-import cors from "cors"
-import config from './config/index';
+import api from "api/index"
+import graphqlapi from "api/graphql"
+import {getToken} from "api/auth"
+import cors from "cors" 
 
 // The OpenHIM Mediator Utils is an essential package for quick mediator setup.
 // It handles the OpenHIM authentication, mediator registration, and mediator heartbeat.
@@ -31,6 +30,8 @@ const app = express();
 
 
 api(app);
+
+graphqlapi(app);
   
 app.use(cors())
  
@@ -42,7 +43,7 @@ app.all('/', (_req, res) => {
  
 app.listen(3001, async () => {
   console.log('Server listening on port 3001...') 
-  await mediatorSetup()
+ // await mediatorSetup()
 })
 
 const mediatorSetup = () => {
