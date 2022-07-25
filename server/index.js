@@ -4,7 +4,9 @@ import express from 'express';
 import api from "./api/index"
 import {getToken} from "./api/auth"
 import cors from "cors"
-import config from './config/index';
+import { ApolloServer } from 'apollo-server-express';
+import {typeDefs} from './Schema/TypeDefs';
+import {resolvers} from './Schema/Resolvers';
 
 // The OpenHIM Mediator Utils is an essential package for quick mediator setup.
 // It handles the OpenHIM authentication, mediator registration, and mediator heartbeat.
@@ -26,7 +28,7 @@ const openhimConfig = {
   trustSelfSigned: true,
   urn
 }
-
+ 
 const app = express();
 
 
@@ -39,11 +41,35 @@ app.use(cors())
 app.all('/', (_req, res) => {
   res.send('Hello World')
 })
+
+
+// const server = new ApolloServer({
+// typeDefs,
+// resolvers
+// }) 
+
+async function startApolloServer(typeDefs, resolvers){
+  const server = new ApolloServer({typeDefs, resolvers})
+  const app = express();
+  await server.start();
+  server.applyMiddleware({app});
+  
+  app.listen(3001,  () => {
+    console.log('Server listening on port 3001...') 
+    //await mediatorSetup()
+  });
+}
+
+startApolloServer(typeDefs, resolvers);
+
+// await server.start();
+
+// server.applyMiddleware({app});
  
-app.listen(3001, async () => {
-  console.log('Server listening on port 3001...') 
-  await mediatorSetup()
-})
+// app.listen(3001,  () => {
+//   console.log('Server listening on port 3001...') 
+//   //await mediatorSetup()
+// });
 
 const mediatorSetup = () => {
   console.log("openhimConfig " + JSON.stringify(openhimConfig))
