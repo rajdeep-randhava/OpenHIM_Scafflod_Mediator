@@ -9,6 +9,8 @@ const typeDefs = gql`
         type:String!
          dateOfBirth:String!
          eventLocation: String! 
+         registration:registrations
+         Childname:[Childname!]!
     }
 
     type registrations{
@@ -32,7 +34,7 @@ const typeDefs = gql`
          }
 
 
-         type birthRegistrations {
+    type birthRegistrations {
         id: Int!
         firstName:String!
         lastName:String!
@@ -43,7 +45,8 @@ const typeDefs = gql`
    
    # Queries 
     type Query {
-        getAllBirthRegistrations : [birthRegistrations!]!
+        getAllBirthRegistrations: [birthRegistrations!]!
+        EventSearchResultSet(id: Int,name:String): [birthRegistrations!]!
     }
 
    # Mutations

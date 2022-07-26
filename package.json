@@ -21,6 +21,7 @@
     "express-graphql": "^0.12.0",
     "graphql": "^15.8.0",
     "link-module-alias": "^1.2.0",
+    "lodash": "^4.17.21",
     "nodemon": "^2.0.19",
     "openhim-mediator-utils": "^0.2.3"
   },
@@ -35,10 +36,10 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
     "jest": "^28.1.2",
-    "jest-coverage-badges": "^1.1.2",
+    "jest-coverage-badges": "^1.0.0",
     "link-module-alias": "^1.2.0",
     "prettier": "^2.7.0",
-    "prettier-standard": "^16.4.1",
+    "prettier-standard": "^15.0.1",
     "supertest": "^6.2.2"
   },
   "_moduleAliases": {
