@@ -4,10 +4,15 @@ import _ from "lodash"
 const resolvers = {
 
     Query:{
-        getAllBirthRegistrations(){
+        getAllBirthRegistrations:(parent,args, context, info) =>{
+            console.log("args0"+parent)
+            console.log("args0"+JSON.stringify(args))
+            console.log("context"+JSON.stringify(context))
+            console.log("info"+JSON.stringify(info))
             return birthRegistrationsList
         },
-        EventSearchResultSet: (parent,args) =>{
+        EventSearchResultSet: (parent,args, context, info) =>{
+        
             const id = args.id;
             const name = args.name;
             console.log("id" + id) 
