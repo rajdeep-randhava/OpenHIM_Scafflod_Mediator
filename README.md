@@ -17,7 +17,7 @@ A mediator scaffolding to be used for tutorials
 From the project directory run:
 
 ```sh
-docker build -t scaffold . &&  docker run --network d157ec8f4339 -p 3001:3001 --name scaffold scaffold
+docker build -t scaffold . &&  docker run --network d3fa788c5df9 -p 3001:3001 --name scaffold scaffold
 ```
 
 The network flag is optional. If connecting to a specific docker network find the network name by running:

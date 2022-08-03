@@ -25,7 +25,7 @@ import mediatorConfig, { urn } from '../mediatorConfig.json'
 // The config details here are used to authenticate and register the mediator with the OpenHIM instance
 const openhimConfig = {
   username: 'root@openhim.org',
-  password: 'wXV8xSW2Ju5X3EPn',
+  password: 'password',
   apiURL: 'https://openhim-core:8080',
   trustSelfSigned: true,
   urn
@@ -41,18 +41,11 @@ api(app);
   
 // Any request regardless of request type or url path to the mediator port will be caught here
 // and trigger the Hello World response.
-app.all('/', (_req, res) => { 
-  console.log("dadsd" ,  _req );
-  console.log("dadsd" ,  _req.query );
+app.all('/', (_req, res) => {  
   res.send(_req.query)
 })
 
-
-app.all('/getdatafromi', (_req, res) => { 
-   
-  res.send("")
-})
-
+ 
  
 
 async function startApolloServer(typeDefs, resolvers){
