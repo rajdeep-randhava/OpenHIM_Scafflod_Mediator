@@ -1,10 +1,14 @@
 'use strict'
 
-import express from 'express';
+import express from 'express'
+import { ApolloServer } from 'apollo-server-express';
+import {typeDefs} from './Schema/TypeDefs';
+import {resolvers} from './Schema/Resolvers';
 import api from "./api/index"
-import {getToken} from "./api/auth"
 import cors from "cors"
-import config from './config/index';
+
+import bodyParser from 'body-parser'
+
 
 // The OpenHIM Mediator Utils is an essential package for quick mediator setup.
 // It handles the OpenHIM authentication, mediator registration, and mediator heartbeat.
@@ -20,33 +24,51 @@ import mediatorConfig, { urn } from '../mediatorConfig.json'
 
 // The config details here are used to authenticate and register the mediator with the OpenHIM instance
 const openhimConfig = {
-  username: process.env.OPENHIM_USERNAME,
-  password: process.env.OPENHIM_PASSWORD,
-  apiURL: process.env.OPENHIM_API_URL,
+  username: 'root@openhim.org',
+  password: 'password',
+  apiURL: 'https://openhim-core:8080',
   trustSelfSigned: true,
   urn
 }
 
-const app = express();
+const app = express();;
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
 
+app.use(cors());
 
 api(app);
   
-app.use(cors())
- 
 // Any request regardless of request type or url path to the mediator port will be caught here
 // and trigger the Hello World response.
-app.all('/', (_req, res) => {
-  res.send('Hello World')
-})
- 
-app.listen(3001, async () => {
-  console.log('Server listening on port 3001...') 
-  await mediatorSetup()
+app.all('/', (_req, res) => {  
+  res.send(_req.query)
 })
 
+ 
+ 
+
+async function startApolloServer(typeDefs, resolvers){
+  const server = new ApolloServer({typeDefs, resolvers})
+   
+  await server.start();
+  server.applyMiddleware({app},'/graphql');
+  
+  app.listen(3001,  () => {
+    console.log('Server listening on port 3001...') 
+      mediatorSetup()
+  });
+}
+
+startApolloServer(typeDefs, resolvers);
+
+//app.listen(3002, () => {
+//  console.log('Server listening on port 3000...')
+
+//  mediatorSetup()
+//})
+
 const mediatorSetup = () => {
-  console.log("openhimConfig " + JSON.stringify(openhimConfig))
   // The purpose of registering the mediator is to allow easy communication between the mediator and the OpenHIM.
   // The details received by the OpenHIM will allow quick channel setup which will allow tracking of requests from
   // the client through any number of mediators involved and all the responses along the way(if the mediators are
@@ -59,12 +81,12 @@ const mediatorSetup = () => {
 
     console.log('Successfully registered mediator!')
 
-    fetchConfig(openhimConfig, async (err, initialConfig) => {
+    fetchConfig(openhimConfig, (err, initialConfig) => {
       if (err) {
         throw new Error(`Failed to fetch initial config. ${err}`)
       }
       console.log('Initial Config: ', JSON.stringify(initialConfig))
-       await getToken();
+
       // The activateHeartbeat method returns an Event Emitter which allows the mediator to attach listeners waiting
       // for specific events triggered by OpenHIM responses to the mediator posting its heartbeat.
       const emitter = activateHeartbeat(openhimConfig)
