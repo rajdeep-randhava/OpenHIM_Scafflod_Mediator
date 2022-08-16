@@ -6,8 +6,74 @@ export const getdata = (req) => {
 
     let return_value=[];
     const requestBody = req.body
-    console.log("asd" + requestBody);
+    console.log("requestBody : " + requestBody);
+    let server_url = "http://172.16.17.137";
+    
 
+
+    let urltoken = "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzY29wZSI6WyJyZWdpc3RlciIsInBlcmZvcm1hbmNlIiwiY2VydGlmeSIsImRlbW8iXSwiaWF0IjoxNjYwMTMzNjA2LCJleHAiOjE2NjA3Mzg0MDYsImF1ZCI6WyJvcGVuY3J2czphdXRoLXVzZXIiLCJvcGVuY3J2czp1c2VyLW1nbnQtdXNlciIsIm9wZW5jcnZzOmhlYXJ0aC11c2VyIiwib3BlbmNydnM6Z2F0ZXdheS11c2VyIiwib3BlbmNydnM6bm90aWZpY2F0aW9uLXVzZXIiLCJvcGVuY3J2czp3b3JrZmxvdy11c2VyIiwib3BlbmNydnM6c2VhcmNoLXVzZXIiLCJvcGVuY3J2czptZXRyaWNzLXVzZXIiLCJvcGVuY3J2czpjb3VudHJ5Y29uZmlnLXVzZXIiLCJvcGVuY3J2czp3ZWJob29rcy11c2VyIiwib3BlbmNydnM6Y29uZmlnLXVzZXIiXSwiaXNzIjoib3BlbmNydnM6YXV0aC1zZXJ2aWNlIiwic3ViIjoiNjJiOTljZDk4ZjExM2E3MDBjYzE5YTFhIn0.yhdFxG0hIBep-Z87f3L314w_U-FgKq2bS76SsEbdWiu3CbcWVAJw1xZhtpVVGERu02ybQQA7_X8a5dnnvXiY8PDkxVguB6yxgeriRkCRS2wOzVH4KtX3A6AidmgpqgH_4E9ycAWtTRbOjmm_mawptt_GHkSzkF_qYBwGc6RnhsV_7zkMVi8t4SCw8htnr6liwseFhHyRF0uEarM7s-CwWtgydcCMOKosp6-Q3W0P0FR0uvaQ0K9wxKIkI5lYsdJqcxcpH-rKiW-0BAtTxQanM_1R4UWxUmouGLE2bGEt6LIDjd6X_LzJUC6gzBNTicGdQkaKa3jmFVICkPBG-zz7LA"
+    let urlgraphql =  server_url+":7070/graphql"
+    var identifier_type="",identifier_id="" ;
+
+    if(requestBody.identifier_type !=null && requestBody.identifier_type !=""){
+      identifier_type  = requestBody.identifier_type  ; 
+    }
+
+    if(requestBody.identifier_id !=null && requestBody.identifier_id !=""){
+      identifier_id  = requestBody.identifier_id  ; 
+    }
+ 
+
+    if(identifier_type!=null && identifier_type!="" && identifier_id!=null && identifier_id!=""){
+
+      let url =   server_url+":5001/fhir/Patient?identifier="+identifier_id
+       
+        let config_url = {
+         method: 'get',
+         url: url, 
+         headers: {    
+           Accept : "*/*" ,
+           authorization: urltoken  
+          }, 
+       }
+         
+       return new Promise((resolve, reject) => {  
+         console.log("url " + url)   
+          
+           axios(config_url).then(async (response) =>  { 
+            
+            let dataResult = [];
+
+            for (let index = 0; index < response.data.entry.length; ++index) {
+ 
+             var ConstURL = server_url+":5001/fhir/Composition?entry=Patient/"+response.data.entry[index].resource.id;
+              var DataFor = await getDetailDataWithoutData('get',ConstURL,urltoken);
+            //  console.log("response.data.entry[index].resource.id " + response.data.entry[index].resource.id);
+            //  console.log("DataFor.data.entry[indexE].resource.id : " +  JSON.stringify( DataFor) );
+            //  console.log("DataFor.data.entry[indexE].resource.id : " + DataFor.entry[0].resource.id);
+              if(DataFor!=null && DataFor!="" && DataFor!=[] 
+             
+              && DataFor.entry!=null && DataFor.entry!=undefined && DataFor.entry!=[]){ 
+                for (let indexE = 0; indexE < DataFor.entry.length; ++indexE) { 
+                 
+                  response.data.entry[index].detailData= await getDetailData(urlgraphql,urltoken,DataFor.entry[indexE].resource.id);
+                  dataResult.push( response.data.entry[index]);
+                  console.log("DataFor.data.entry[indexE].resource.id : " + response.data.entry[index])
+                }
+              }   
+              
+              //console.log("response.data.entry[index].resource.id " + response.data.entry[index].resource.id) 
+            }
+            //console.log("asasd : " +response);
+           resolve(dataResult);
+         }) 
+       }).then(function(res){ 
+         return res;
+       }); 
+
+
+    }else{
+  
       var name = "", fathername = "",mothername= "",firstname="",lastname="";
       if(requestBody.first_name_value !=null && requestBody.first_name_value !=""){
         name  = requestBody.first_name_value  ;
@@ -38,17 +104,19 @@ export const getdata = (req) => {
       if(requestBody.brn_value){
         brndrn = requestBody.brn_value
       } 
-
+      if(requestBody.drn_value){
+        brndrn = requestBody.drn_value
+      } 
+       
       var contactNumber = "";
       if(requestBody.contactNumber){
         contactNumber = requestBody.contactNumber
       } 
         
 
-    let url =  "http://172.16.18.160:7070/graphql"
+   
    // let urltoken = "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzY29wZSI6WyJyZWdpc3RlciIsInBlcmZvcm1hbmNlIiwiY2VydGlmeSIsImRlbW8iXSwiaWF0IjoxNjU5MzQ4NzM3LCJleHAiOjE2NTk5NTM1MzcsImF1ZCI6WyJvcGVuY3J2czphdXRoLXVzZXIiLCJvcGVuY3J2czp1c2VyLW1nbnQtdXNlciIsIm9wZW5jcnZzOmhlYXJ0aC11c2VyIiwib3BlbmNydnM6Z2F0ZXdheS11c2VyIiwib3BlbmNydnM6bm90aWZpY2F0aW9uLXVzZXIiLCJvcGVuY3J2czp3b3JrZmxvdy11c2VyIiwib3BlbmNydnM6c2VhcmNoLXVzZXIiLCJvcGVuY3J2czptZXRyaWNzLXVzZXIiLCJvcGVuY3J2czpjb3VudHJ5Y29uZmlnLXVzZXIiLCJvcGVuY3J2czp3ZWJob29rcy11c2VyIiwib3BlbmNydnM6Y29uZmlnLXVzZXIiXSwiaXNzIjoib3BlbmNydnM6YXV0aC1zZXJ2aWNlIiwic3ViIjoiNjJiOTljZDk4ZjExM2E3MDBjYzE5YTFhIn0.eHPrb0AllvU7gqyPqDYshQBuUZjVp1V6PFAgvuGyzjT1QMwPqlPRb0VRK2HejcvV_DngyGc4xW8Ta2gPnOk48G8HQB61_CO3TfbK7YYAzZ6Cg6osXMze9HYO8gfxOUCrHhCYDE1Xhqvb9wkuMBW0TtK9msnguBdf9A_r7ovqGu8FcHwzkAxpWabTqHtZ04ySvEkTOZi0Zeo-AN7woNCmpS-y65w82Z0lkv8HCzt3A0IADipbWpvFzbAkRVKkV_yEZWPehCFjAQEzYuMmVQV9a64fELO87-DbisRaNOYZ0sfCp-CssxUxHek6YkPd1M9BvBNuLlEsggo5jvsnq2KdJw"
-    let urltoken = "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzY29wZSI6WyJyZWdpc3RlciIsInBlcmZvcm1hbmNlIiwiY2VydGlmeSIsImRlbW8iXSwiaWF0IjoxNjU5NDQyMDQ2LCJleHAiOjE2NjAwNDY4NDYsImF1ZCI6WyJvcGVuY3J2czphdXRoLXVzZXIiLCJvcGVuY3J2czp1c2VyLW1nbnQtdXNlciIsIm9wZW5jcnZzOmhlYXJ0aC11c2VyIiwib3BlbmNydnM6Z2F0ZXdheS11c2VyIiwib3BlbmNydnM6bm90aWZpY2F0aW9uLXVzZXIiLCJvcGVuY3J2czp3b3JrZmxvdy11c2VyIiwib3BlbmNydnM6c2VhcmNoLXVzZXIiLCJvcGVuY3J2czptZXRyaWNzLXVzZXIiLCJvcGVuY3J2czpjb3VudHJ5Y29uZmlnLXVzZXIiLCJvcGVuY3J2czp3ZWJob29rcy11c2VyIiwib3BlbmNydnM6Y29uZmlnLXVzZXIiXSwiaXNzIjoib3BlbmNydnM6YXV0aC1zZXJ2aWNlIiwic3ViIjoiNjJiOTljZDk4ZjExM2E3MDBjYzE5YTFhIn0.t3mhvf5J9Qp2SZQXaLSUVixIORKKkmliElQh2xHumZgY6rTpOPqZRbmZA5VOOgcfAKRws01eyOMuYMQudfYBac2fa6r2jChq3ELemsXB1cu7I6lYYbcjoAm4zOvlPC_-fLazpDMHveaR7rGyFdYgeGc5h-1FXFIp8izGbaHu5EShmThLfSXN19ukgqQuiMEodMtF9-RUrKGVmgAjDm2I1XOjUPFLT7_mMmkGyBxPL4wOVgeilmt4vGqEOod5h5s7qR2YmZxotDsJs93fCVa2RlCxHLFy5f-ltOzkmjt_ldXgbQO4cdGyxJqoLXtTxC_kywQLgMJpyUUEwXtOwsAJpg"
-      
+    
     let data = {"operationName":"searchEvents",
     "variables":{
     "locationIds":["c9c4d6e9-981c-4646-98fe-4014fddebd5e"],
@@ -62,7 +130,7 @@ export const getdata = (req) => {
    
      let config_url = {
       method: 'post',
-      url: url,
+      url: urlgraphql,
       data : data,
       headers: {    
         Accept : "*/*" ,
@@ -70,14 +138,14 @@ export const getdata = (req) => {
     }
       
     return new Promise((resolve, reject) => {  
-      console.log("url " + url)   
+      console.log("url " + urlgraphql)   
        
         axios(config_url).then(async (response) =>  { 
  
         let dataResult = [];
         for (let index = 0; index < response.data.data.searchEvents.results.length; ++index) {
             
-          response.data.data.searchEvents.results[index].detailData= await getDetailData(url,urltoken,response.data.data.searchEvents.results[index].id);
+          response.data.data.searchEvents.results[index].detailData= await getDetailData(urlgraphql,urltoken,response.data.data.searchEvents.results[index].id);
          
         }
           for (let index = 0; index < response.data.data.searchEvents.results.length; ++index) {
@@ -118,9 +186,7 @@ export const getdata = (req) => {
             console.log(" monthernameReturn  "+ monthernameReturn );
             
             if(element.type == "Death"){
-
-                
-
+ 
                 if(firstname !=null && firstname!=""  ){ 
                     if(firstname.toLowerCase() != element.deceasedName[0].firstNames.toLowerCase()){
                         thisRecordShouldCount++;
@@ -138,7 +204,11 @@ export const getdata = (req) => {
                }
               
             }else if(element.type =="Birth"){
- 
+             
+              var ConstURL = server_url+":5001/fhir/Patient?identifier="+ element.registration.registrationNumber
+             
+              response.data.data.searchEvents.results[index].birthIdentifier= await getDetailDataWithoutData('get',ConstURL,urltoken);
+         
                 if(firstname !=null && firstname!=""  ){ 
                     if(firstname.toLowerCase() != element.childName[0].firstNames.toLowerCase()){
                         thisRecordShouldCount++;
@@ -153,7 +223,7 @@ export const getdata = (req) => {
                  
                 if(thisRecordShouldCount==0){
                   dataResult.push( response.data.data.searchEvents.results[index]); 
-                  }
+                }
             }
         }
  
@@ -162,6 +232,7 @@ export const getdata = (req) => {
     }).then(function(res){ 
       return res;
     }); 
+  }
   }
 
 
@@ -200,20 +271,34 @@ function getDetailData(url,urltoken,IdForFeatch){
 
     var requestdata = req.body;
 
-    let url =  "http://172.16.17.13:5001/scaffold"
+    let url =  "http://172.16.17.10:5001/searchevent"
    // let urltoken = "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzY29wZSI6WyJyZWdpc3RlciIsInBlcmZvcm1hbmNlIiwiY2VydGlmeSIsImRlbW8iXSwiaWF0IjoxNjU5MzQ4NzM3LCJleHAiOjE2NTk5NTM1MzcsImF1ZCI6WyJvcGVuY3J2czphdXRoLXVzZXIiLCJvcGVuY3J2czp1c2VyLW1nbnQtdXNlciIsIm9wZW5jcnZzOmhlYXJ0aC11c2VyIiwib3BlbmNydnM6Z2F0ZXdheS11c2VyIiwib3BlbmNydnM6bm90aWZpY2F0aW9uLXVzZXIiLCJvcGVuY3J2czp3b3JrZmxvdy11c2VyIiwib3BlbmNydnM6c2VhcmNoLXVzZXIiLCJvcGVuY3J2czptZXRyaWNzLXVzZXIiLCJvcGVuY3J2czpjb3VudHJ5Y29uZmlnLXVzZXIiLCJvcGVuY3J2czp3ZWJob29rcy11c2VyIiwib3BlbmNydnM6Y29uZmlnLXVzZXIiXSwiaXNzIjoib3BlbmNydnM6YXV0aC1zZXJ2aWNlIiwic3ViIjoiNjJiOTljZDk4ZjExM2E3MDBjYzE5YTFhIn0.eHPrb0AllvU7gqyPqDYshQBuUZjVp1V6PFAgvuGyzjT1QMwPqlPRb0VRK2HejcvV_DngyGc4xW8Ta2gPnOk48G8HQB61_CO3TfbK7YYAzZ6Cg6osXMze9HYO8gfxOUCrHhCYDE1Xhqvb9wkuMBW0TtK9msnguBdf9A_r7ovqGu8FcHwzkAxpWabTqHtZ04ySvEkTOZi0Zeo-AN7woNCmpS-y65w82Z0lkv8HCzt3A0IADipbWpvFzbAkRVKkV_yEZWPehCFjAQEzYuMmVQV9a64fELO87-DbisRaNOYZ0sfCp-CssxUxHek6YkPd1M9BvBNuLlEsggo5jvsnq2KdJw"
-    let urltoken = "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzY29wZSI6WyJyZWdpc3RlciIsInBlcmZvcm1hbmNlIiwiY2VydGlmeSIsImRlbW8iXSwiaWF0IjoxNjU5MzU4NDQyLCJleHAiOjE2NTk5NjMyNDIsImF1ZCI6WyJvcGVuY3J2czphdXRoLXVzZXIiLCJvcGVuY3J2czp1c2VyLW1nbnQtdXNlciIsIm9wZW5jcnZzOmhlYXJ0aC11c2VyIiwib3BlbmNydnM6Z2F0ZXdheS11c2VyIiwib3BlbmNydnM6bm90aWZpY2F0aW9uLXVzZXIiLCJvcGVuY3J2czp3b3JrZmxvdy11c2VyIiwib3BlbmNydnM6c2VhcmNoLXVzZXIiLCJvcGVuY3J2czptZXRyaWNzLXVzZXIiLCJvcGVuY3J2czpjb3VudHJ5Y29uZmlnLXVzZXIiLCJvcGVuY3J2czp3ZWJob29rcy11c2VyIiwib3BlbmNydnM6Y29uZmlnLXVzZXIiXSwiaXNzIjoib3BlbmNydnM6YXV0aC1zZXJ2aWNlIiwic3ViIjoiNjJiOTljZDk4ZjExM2E3MDBjYzE5YTFhIn0.BpT4H5w15hEFuwbz51AiYVxDuiXYbme2YWqcrEXbLVeGO2zSNXrX1yzdqvmqBG2skckGs1FeyHIR5kdo19j_01xl04N6gtH9zhIzLlE-yysGc8vQQpO7howN-8tF80OnAJUPPxCRqhA05qxnzA8TRxiLlYSYhiD3W6V-30Ge3rvvkTIs1Jic3OfGyXhQQXs7tv_37PSR0RAjLSkM2JdWJfj9X1nMzsI9Bs9V20M0UHRQaIcnfD-9OpCbiIH8Ocli-cLYI8A3CsmObwdNic2VQOwNeVVf4btUPEVz7rAQZKrZ24M_G_37bH9kMuFoqCNXkMUzhtRHyBQk0KQGtGxvrA"
-      console.log("requestdata " +requestdata)
+    let urltoken = "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzY29wZSI6WyJyZWdpc3RlciIsInBlcmZvcm1hbmNlIiwiY2VydGlmeSIsImRlbW8iXSwiaWF0IjoxNjYwMTMzNjA2LCJleHAiOjE2NjA3Mzg0MDYsImF1ZCI6WyJvcGVuY3J2czphdXRoLXVzZXIiLCJvcGVuY3J2czp1c2VyLW1nbnQtdXNlciIsIm9wZW5jcnZzOmhlYXJ0aC11c2VyIiwib3BlbmNydnM6Z2F0ZXdheS11c2VyIiwib3BlbmNydnM6bm90aWZpY2F0aW9uLXVzZXIiLCJvcGVuY3J2czp3b3JrZmxvdy11c2VyIiwib3BlbmNydnM6c2VhcmNoLXVzZXIiLCJvcGVuY3J2czptZXRyaWNzLXVzZXIiLCJvcGVuY3J2czpjb3VudHJ5Y29uZmlnLXVzZXIiLCJvcGVuY3J2czp3ZWJob29rcy11c2VyIiwib3BlbmNydnM6Y29uZmlnLXVzZXIiXSwiaXNzIjoib3BlbmNydnM6YXV0aC1zZXJ2aWNlIiwic3ViIjoiNjJiOTljZDk4ZjExM2E3MDBjYzE5YTFhIn0.yhdFxG0hIBep-Z87f3L314w_U-FgKq2bS76SsEbdWiu3CbcWVAJw1xZhtpVVGERu02ybQQA7_X8a5dnnvXiY8PDkxVguB6yxgeriRkCRS2wOzVH4KtX3A6AidmgpqgH_4E9ycAWtTRbOjmm_mawptt_GHkSzkF_qYBwGc6RnhsV_7zkMVi8t4SCw8htnr6liwseFhHyRF0uEarM7s-CwWtgydcCMOKosp6-Q3W0P0FR0uvaQ0K9wxKIkI5lYsdJqcxcpH-rKiW-0BAtTxQanM_1R4UWxUmouGLE2bGEt6LIDjd6X_LzJUC6gzBNTicGdQkaKa3jmFVICkPBG-zz7LA"
+      
+    var countBrnDrn = 0,brndrnvalue="";;
+    if(requestdata.brn_value!=null && requestdata.brn_value!=undefined && requestdata.brn_value!=""
+      && requestdata.drn_value!=null && requestdata.drn_value!=undefined && requestdata.drn_value!=""){
+        countBrnDrn++;
+    }else if(requestdata.brn_value!=null && requestdata.brn_value!=undefined && requestdata.brn_value!="" ){
+      brndrnvalue = requestdata.brn_value;
+    }else if(requestdata.drn_value!=null && requestdata.drn_value!=undefined && requestdata.drn_value!=""){
+      brndrnvalue= requestdata.drn_value;
+    }
+    console.log("countBrnDrn " +countBrnDrn);
+if(countBrnDrn ==0){
     let data = {
+      "identifier_type": requestdata.identifier_type, 
+      "identifier_id": requestdata.identifier_id, 
       "first_name_value" : requestdata.first_name_value, 
       "last_name_value" :requestdata.last_name_value,
       "father_name_value" :requestdata.father_name_value,
       "mother_name_value" :requestdata.mother_name_value,
-      "brn_value" :requestdata.brn_value,
+      "brn_value" :brndrnvalue,
+      "drn_value" :requestdata.drn_value,
       "contactNumber" :requestdata.contactNumber
   }
-  console.log("asdasdasdsddd");
-  console.log(data);
+ 
+  
      let config_url = {
       method: 'post',
       url: url,
@@ -224,14 +309,144 @@ function getDetailData(url,urltoken,IdForFeatch){
        }, 
     }
       
-    return new Promise((resolve, reject) => {  
-      console.log("url " + url)    
-        axios(config_url).then(async (response) =>  { 
-          console.log("Asdasddsddd")
-          console.log(JSON.parse(JSON.stringify(response.data)));
-        resolve(JSON.parse(JSON.stringify( response.data)));
+      return new Promise((resolve, reject) => {  
+       // console.log("url " + url)    
+          axios(config_url).then(async (response) =>  { 
+         //   console.log("Asdasddsddd")
+          //  console.log(JSON.parse(JSON.stringify(response.data)));
+          resolve(JSON.parse(JSON.stringify( response.data)));
+        }) 
+      }).then(function(res){ 
+        return res;
+      }); 
+    }else {
+      let data = {
+        "identifier_type": requestdata.identifier_type, 
+        "identifier_id": requestdata.identifier_id, 
+        "first_name_value" : requestdata.first_name_value, 
+        "last_name_value" :requestdata.last_name_value,
+        "father_name_value" :requestdata.father_name_value,
+        "mother_name_value" :requestdata.mother_name_value,
+        "brn_value" :requestdata.brn_value, 
+        "contactNumber" :requestdata.contactNumber
+    } 
+       let config_url = {
+        method: 'post',
+        url: url,
+        data :  data ,
+        headers: {    
+          Accept : "*/*" ,
+          authorization: urltoken 
+         }, 
+      }
+        
+        return new Promise((resolve, reject) => {  
+        //  console.log("url " + url)    
+            axios(config_url).then(async (response) =>  { 
+
+              let data1 = {
+                "identifier_type": requestdata.identifier_type, 
+                "identifier_id": requestdata.identifier_id, 
+                "first_name_value" : requestdata.first_name_value, 
+                "last_name_value" :requestdata.last_name_value,
+                "father_name_value" :requestdata.father_name_value,
+                "mother_name_value" :requestdata.mother_name_value, 
+                "drn_value" :requestdata.drn_value,
+                "contactNumber" :requestdata.contactNumber
+            } 
+               let config_url1 = {
+                method: 'post',
+                url: url,
+                data :  data1 ,
+                headers: {    
+                  Accept : "*/*" ,
+                  authorization: urltoken 
+                 }, 
+              }
+                
+              var responseArray = [];
+              if(response==null || response==undefined){
+                console.log("Null  response for brn "); 
+              }else{
+                console.log("response for brn: " + JSON.stringify(response.data.data)); 
+              }
+             
+              if(response!=null  && response!=undefined  
+              && response.data!=undefined && response.data!=[] && response.data!="" 
+              && response.data.data!=undefined && response.data.data!=[] && response.data.data!=""   ){
+                for(var i = 0;i<response.data.data.length;i++){
+                  responseArray.push(response.data.data[i]);
+                }                 
+              } 
+              console.log("response 1 " + JSON.stringify({data:responseArray}));  
+               const secondrespose= await new Promise((resolve, reject) => {  
+                  
+                    axios(config_url1).then(async (response1) =>  {                       
+                      resolve(JSON.parse(JSON.stringify( response1.data)));                      
+                    }) 
+                  }).then(function(res){ 
+                    return res;
+                  }); 
+
+                if(secondrespose!=null && secondrespose!="" && secondrespose!=undefined && secondrespose!=undefined
+                && secondrespose.data!=undefined && secondrespose.data!=[] && secondrespose.data!=""  ){
+                  for(var i = 0;i<secondrespose.data.length;i++){
+                    responseArray.push(secondrespose.data[i]);
+                  }                 
+                } 
+
+                console.log("response 2 " + JSON.stringify({data:responseArray}));
+               resolve(JSON.parse(JSON.stringify({data:responseArray}))); 
+          }) 
+        }).then(function(res){ 
+          return res;
+        }); 
+    }
+  } 
+
+function getDetailDataWithoutData(methodtype,url,urltoken){
+
+  let config_url = {
+    method: methodtype,
+    url: url, 
+    headers: {    
+      Accept : "*/*" ,
+      authorization: urltoken 
+     } 
+  }
+    
+    return new Promise((resolve, reject) => {   
+        axios(config_url).then(async (response) =>  {  
+        // console.log(JSON.parse(JSON.stringify(response.data)));
+         resolve(JSON.parse(JSON.stringify( response.data)));
       }) 
     }).then(function(res){ 
       return res;
     }); 
+  
+
+}
+
+function getDetailDataWithData(methodtype,url,urltoken,data){
+
+  let config_url = {
+    method: methodtype,
+    url: url, 
+    data:data,
+    headers: {    
+      Accept : "*/*" ,
+      authorization: urltoken 
+     } 
   }
+    
+    return new Promise((resolve, reject) => {   
+        axios(config_url).then(async (response) =>  {  
+         console.log(JSON.parse(JSON.stringify(response.data)));
+         resolve(JSON.parse(JSON.stringify( response.data)));
+      }) 
+    }).then(function(res){ 
+      return res;
+    }); 
+  
+
+}
